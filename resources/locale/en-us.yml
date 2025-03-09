@@ -1,0 +1,5 @@
+general:
+  no-permission: "&r&c&l(!) You do not have permission to use this!"
+
+menu:
+  not-found: "&r&c&l(!) Menu not found!"

@@ -1,0 +1,43 @@
+settings:
+  size: "CHEST" # Options" CHEST. DOUBLE_CHEST, HOPPER
+  command:
+    enabled: true
+    command: "kit"
+  
+menu:
+  title: "&r&l&8Kit Menu"
+  items:
+    "INVENTORY":
+      material: "GRAY_STAINED_GLASS_PANE"
+      name: " "
+    "BORDER":
+      material: "BLACK_STAINED_GLASS_PANE"
+      name: " "
+    10:
+      material: "WOODEN_SWORD"
+      name: "&r&l&8Starter Kit"
+      lore: 
+        - "&r&7Claim the starter"
+        - "&r&7kit for items!"
+      commands:
+        - type: PLAYER
+          command: "kit starter"
+        - type: CONSOLE
+          command: "give {PLAYER} diamond 1"
+        - type: MESSAGE
+          text: "&r&l&8Claimed Starter Kit"   
+    11: 
+      material: "IRON_SWORD"
+      name: "&r&l&8Survival Kit"
+      lore: 
+        - "&r&7Claim the Survival"
+        - "&r&7kit for items!"
+      permission: "kit.survival" # Optional, incase you want to check for permission before running commands.
+      commands:
+        - type: PLAYER
+          command: "kit survival"
+        - type: CONSOLE
+          command: "give {PLAYER} diamond 1"
+        - type: MESSAGE
+          text: "&r&l&8Claimed Survival Kit"
+  
