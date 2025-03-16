@@ -9,8 +9,10 @@ use ecstsy\MartianMenus\utils\MenuManager;
 use ecstsy\MartianUtilities\managers\LanguageManager;
 use ecstsy\MartianUtilities\utils\GeneralUtils;
 use muqsit\invmenu\InvMenuHandler;
-use pocketmine\command\Command;
+use pocketmine\utils\TextFormat as C;
 use pocketmine\command\CommandSender;
+use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -44,20 +46,53 @@ final class Loader extends PluginBase {
 
         self::$languageManager = new LanguageManager($this, $language);
 
-        $this->getServer()->getCommandMap()->register("MartianMenus", new class("menu") extends Command {
-            public function __construct(string $name){
-                parent::__construct($name);
-                $this->setPermission("MartianMenus.menu");
-            }
+        foreach ($this->getMenuManager()->getAllMenus() as $menuName => $menuConfig) {
+            if (isset($menuConfig["settings"]["command"]["enabled"]) && $menuConfig["settings"]["command"]["enabled"] === true) {
+                $commandName = $menuConfig["settings"]["command"]["name"] ?? $menuName;
+                $permission = $menuConfig["settings"]["command"]["permission"];
 
-            public function execute(CommandSender $sender, string $commandLabel, array $args)
-            {
-                if (!$sender instanceof Player) return;
+                PermissionManager::getInstance()->addPermission(new Permission($permission, "Permission to run {$commandName}"));
 
-                Loader::getInstance()->getMenuManager()->openMenu("kit", $sender);
+                $this->getServer()->getCommandMap()->register("MartianMenus", new class($menuName, $commandName) extends BaseCommand {
+                    
+                    public function __construct(private string $menuName, string $commandName) {
+                        parent::__construct(Loader::getInstance(), $commandName, "Opens the {$menuName} menu", []);
+                    }
+
+                    /** @var string|null */
+                    private ?string $permission = null; 
+
+                    public function prepare(): void {
+                        $menuConfig = Loader::getMenuManager()->getMenu($this->menuName);
+                        if ($menuConfig !== null && isset($menuConfig["settings"]["command"]["permission"])) {
+                            $this->permission = $menuConfig["settings"]["command"]["permission"];
+                        }
+
+                        $this->setPermission($this->getPermission());                        
+                    }
+                    
+                    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+                        if (!$sender instanceof Player) {
+                            $sender->sendMessage(C::colorize(Loader::getLanguageManager()->getNested("general.non-player")));
+                            return;
+                        }
+                        
+                        if ($this->permission !== null && !$sender->hasPermission($this->permission)) {
+                            $sender->sendMessage(C::colorize(Loader::getLanguageManager()->getNested("general.no-permission")));
+                            return;
+                        }
+                        
+                        Loader::getMenuManager()->openMenu($this->menuName, $sender);
+                    }
+
+                    public function getPermission(): string {
+                        return $this->permission;
+                    }
+                });
+                
+                $this->getLogger()->info(C::GREEN . "Registered menu command: /" . $commandName . " for menu " . $menuName);
             }
-        });
-        
+        }
     }
 
     public static function getMenuManager(): MenuManager {
