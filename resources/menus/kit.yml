@@ -2,7 +2,8 @@ settings:
   size: "CHEST" # Options" CHEST. DOUBLE_CHEST, HOPPER
   command:
     enabled: true
-    command: "kit"
+    name: "kit"
+    permission: MartianMenus.kit 
   
 menu:
   title: "&r&l&8Kit Menu"
@@ -40,4 +41,5 @@ menu:
           command: "give {PLAYER} diamond 1"
         - type: MESSAGE
           text: "&r&l&8Claimed Survival Kit"
+        - type: CLOSE # Closes the window after clicking
   
